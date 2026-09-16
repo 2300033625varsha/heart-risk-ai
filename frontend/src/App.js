@@ -1,35 +1,35 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Home from './pages/Home';
-import About from './pages/About';
-import HowItWorks from './pages/HowItWorks';
-import Dashboard from './pages/Dashboard';
-import './css/App.css';
+import axios from 'axios';
 
-const App = () => {
-  return (
-    <ThemeProvider>
-      <Router>
-        <div className="app">
-          <Header />
-          <main className="main-content">
-            <div className="container">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/about" element={<About />} />
-              </Routes>
-            </div>
-          </main>
-          <Footer />
-        </div>
-      </Router>
-    </ThemeProvider>
-  );
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || 'https://heart-risk-ai-u1c3.onrender.com';
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 30000,
+});
+
+export const predictHeartRisk = async (features) => {
+  try {
+    const response = await apiClient.post('/predict', { features });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      throw new Error(
+        error.response.data.error || 'Server error occurred'
+      );
+    } else if (error.request) {
+      throw new Error(
+        'No response from server. Please try again.'
+      );
+    } else {
+      throw new Error(
+        error.message || 'An unexpected error occurred'
+      );
+    }
+  }
 };
 
-export default App;
+export default apiClient;
